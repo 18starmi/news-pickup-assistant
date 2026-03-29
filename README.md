@@ -118,11 +118,8 @@ infra/
 
 ## 開発ドキュメント
 
-- [AGENTS.md](/Volumes/ネクストレージくん/News/codex-set%20/AGENTS.md)
-- [PROJECT.md](/Volumes/ネクストレージくん/News/codex-set%20/PROJECT.md)
-- [CODEX_PROMPT.md](/Volumes/ネクストレージくん/News/codex-set%20/CODEX_PROMPT.md)
-- [docs/architecture.md](/Volumes/ネクストレージくん/News/docs/architecture.md)
-- [docs/security.md](/Volumes/ネクストレージくん/News/docs/security.md)
+- `docs/architecture.md`
+- `docs/security.md`
 
 ## 今後の候補
 
