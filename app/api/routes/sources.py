@@ -88,6 +88,7 @@ def list_sources_view(connection: sqlite3.Connection = Depends(get_db_connection
     <form class="inline-form" method="post" action="/jobs/run-active/view">
       <button type="submit">有効ソースを一括実行</button>
     </form>
+    <a class="button-link" href="/jobs/scheduler/view">定時実行を設定</a>
     <a class="button-link" href="/items/view">記事一覧を見る</a>
     """
     return render_page(

@@ -14,4 +14,5 @@ class RankedItem:
     ranking_score: float
     is_archived: bool = False
     archived_at: datetime | None = None
+    notified_to_slack_at: datetime | None = None
     created_at: datetime | None = None

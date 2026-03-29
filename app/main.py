@@ -10,17 +10,21 @@ from app.api.routes.sources import router as sources_router
 from app.api.routes.trending import router as trending_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
+from app.scheduler.runner import BackgroundSchedulerRunner
 from app.services.bootstrap_service import bootstrap_application
 
 
 settings = get_settings()
 configure_logging(settings.app_env)
+scheduler_runner = BackgroundSchedulerRunner()
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     bootstrap_application()
+    scheduler_runner.start()
     yield
+    await scheduler_runner.stop()
 
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)

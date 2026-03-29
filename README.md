@@ -19,6 +19,8 @@
 - 記事カード UI での閲覧とアーカイブ
 - ユーザー評価の保存と表示順への反映
 - GitHub Trending の別ビュー表示
+- Slack Webhook への新着通知
+- UI から切り替えられる定時実行
 
 ## 技術スタック
 
@@ -81,6 +83,27 @@ cp .env.example .env
 ```bash
 .venv/bin/python -m pytest
 ```
+
+## Slack 通知
+
+このプロジェクトは `Slack Incoming Webhook` を使って、新着記事の上位通知を Slack に送れます。
+
+Webhook の有効化、通知件数、Webhook URL は UI の `/jobs/scheduler/view` から設定できます。保存した Webhook はローカル DB に保持され、Git には含まれません。
+
+`.env` の `SLACK_WEBHOOK_URL` は初期値やフォールバックとしても使えますが、通常運用は UI 設定だけで大丈夫です。
+
+有効化すると、巡回実行後に未通知の記事だけが Slack に送られます。同じ記事は二重送信されません。
+
+## 定時実行
+
+アプリ起動中は、`/jobs/scheduler/view` から定時実行と Slack 通知設定を変更できます。
+
+- `定時実行を有効にする` を ON
+- 実行間隔を分単位で保存
+- バックグラウンドで有効ソースを直接巡回
+- 新着があれば Slack 通知
+
+将来的に `launchd` へ切り出したい場合は、[scripts/run_scheduled_job.py](/Volumes/ネクストレージくん/News/scripts/run_scheduled_job.py) をそのまま実行対象にできます。
 
 ## Crawl4AI のセットアップ
 

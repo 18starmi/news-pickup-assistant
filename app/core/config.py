@@ -25,6 +25,9 @@ class Settings:
     index_source_max_items: int = 5
     scheduler_enabled: bool = False
     scheduler_interval_minutes: int = 60
+    slack_webhook_url: str | None = None
+    slack_notify_enabled: bool = False
+    slack_notify_limit: int = 3
 
 
 @lru_cache
@@ -45,4 +48,7 @@ def get_settings() -> Settings:
         index_source_max_items=int(os.getenv("INDEX_SOURCE_MAX_ITEMS", "5")),
         scheduler_enabled=os.getenv("SCHEDULER_ENABLED", "false").lower() in {"1", "true", "yes", "on"},
         scheduler_interval_minutes=int(os.getenv("SCHEDULER_INTERVAL_MINUTES", "60")),
+        slack_webhook_url=os.getenv("SLACK_WEBHOOK_URL"),
+        slack_notify_enabled=os.getenv("SLACK_NOTIFY_ENABLED", "false").lower() in {"1", "true", "yes", "on"},
+        slack_notify_limit=int(os.getenv("SLACK_NOTIFY_LIMIT", "3")),
     )

@@ -22,6 +22,8 @@ def _ensure_ranked_item_columns(connection) -> None:
         )
     if "archived_at" not in columns:
         connection.execute("ALTER TABLE ranked_items ADD COLUMN archived_at TEXT")
+    if "notified_to_slack_at" not in columns:
+        connection.execute("ALTER TABLE ranked_items ADD COLUMN notified_to_slack_at TEXT")
 
 
 def _ensure_extracted_document_columns(connection) -> None:
@@ -39,5 +41,19 @@ def initialize_database() -> None:
             connection.execute(statement)
         _ensure_ranked_item_columns(connection)
         _ensure_extracted_document_columns(connection)
+        connection.execute(
+            """
+            INSERT INTO scheduler_settings (id, enabled, interval_minutes)
+            VALUES (1, 0, 60)
+            ON CONFLICT(id) DO NOTHING
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO slack_settings (id, enabled, notify_limit, webhook_url)
+            VALUES (1, 0, 3, NULL)
+            ON CONFLICT(id) DO NOTHING
+            """
+        )
         connection.commit()
     logger.info("Database schema initialized")

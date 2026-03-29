@@ -20,8 +20,9 @@ class RankedItemRepository:
                 importance_score,
                 ranking_score,
                 is_archived,
-                archived_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                archived_at,
+                notified_to_slack_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 ranked_item.extracted_document_id,
@@ -33,6 +34,7 @@ class RankedItemRepository:
                 ranked_item.ranking_score,
                 int(ranked_item.is_archived),
                 ranked_item.archived_at.isoformat() if ranked_item.archived_at else None,
+                ranked_item.notified_to_slack_at.isoformat() if ranked_item.notified_to_slack_at else None,
             ),
         )
         self.connection.commit()
@@ -42,7 +44,7 @@ class RankedItemRepository:
         row = self.connection.execute(
             """
             SELECT id, extracted_document_id, summary, title_ja, supplement_ja, category, importance_score, ranking_score,
-                   is_archived, archived_at, created_at
+                   is_archived, archived_at, notified_to_slack_at, created_at
             FROM ranked_items
             WHERE id = ?
             """,
@@ -57,7 +59,7 @@ class RankedItemRepository:
         row = self.connection.execute(
             """
             SELECT id, extracted_document_id, summary, title_ja, supplement_ja, category, importance_score, ranking_score,
-                   is_archived, archived_at, created_at
+                   is_archived, archived_at, notified_to_slack_at, created_at
             FROM ranked_items
             WHERE extracted_document_id = ?
             """,
@@ -72,11 +74,30 @@ class RankedItemRepository:
         rows = self.connection.execute(
             f"""
             SELECT id, extracted_document_id, summary, title_ja, supplement_ja, category, importance_score, ranking_score,
-                   is_archived, archived_at, created_at
+                   is_archived, archived_at, notified_to_slack_at, created_at
             FROM ranked_items
             {where_clause}
             ORDER BY ranking_score DESC, id DESC
             """
+        ).fetchall()
+        return [self._to_domain(row) for row in rows]
+
+    def list_unnotified_by_ids(self, ranked_item_ids: list[int], limit: int | None = None) -> list[RankedItem]:
+        if not ranked_item_ids:
+            return []
+        placeholders = ", ".join("?" for _ in ranked_item_ids)
+        limit_clause = f"LIMIT {int(limit)}" if limit is not None else ""
+        rows = self.connection.execute(
+            f"""
+            SELECT id, extracted_document_id, summary, title_ja, supplement_ja, category, importance_score, ranking_score,
+                   is_archived, archived_at, notified_to_slack_at, created_at
+            FROM ranked_items
+            WHERE id IN ({placeholders})
+              AND notified_to_slack_at IS NULL
+            ORDER BY ranking_score DESC, id DESC
+            {limit_clause}
+            """,
+            tuple(ranked_item_ids),
         ).fetchall()
         return [self._to_domain(row) for row in rows]
 
@@ -127,6 +148,20 @@ class RankedItemRepository:
         self.connection.commit()
         return self.get_by_id(ranked_item_id)
 
+    def mark_notified_to_slack(self, ranked_item_ids: list[int], notified_at: datetime) -> None:
+        if not ranked_item_ids:
+            return
+        placeholders = ", ".join("?" for _ in ranked_item_ids)
+        self.connection.execute(
+            f"""
+            UPDATE ranked_items
+            SET notified_to_slack_at = ?
+            WHERE id IN ({placeholders})
+            """,
+            (notified_at.isoformat(), *ranked_item_ids),
+        )
+        self.connection.commit()
+
     def list_ids_for_pruning(self, keep_count: int) -> list[int]:
         rows = self.connection.execute(
             """
@@ -157,5 +192,8 @@ class RankedItemRepository:
             ranking_score=row["ranking_score"],
             is_archived=bool(row["is_archived"]),
             archived_at=datetime.fromisoformat(row["archived_at"]) if row["archived_at"] else None,
+            notified_to_slack_at=datetime.fromisoformat(row["notified_to_slack_at"])
+            if row["notified_to_slack_at"]
+            else None,
             created_at=datetime.fromisoformat(row["created_at"]),
         )

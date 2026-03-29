@@ -1,17 +1,8 @@
 from dataclasses import dataclass
-
-from app.core.config import get_settings
-
+from datetime import datetime
 
 @dataclass(frozen=True, slots=True)
 class SchedulerConfig:
     enabled: bool
     interval_minutes: int
-
-
-def get_scheduler_config() -> SchedulerConfig:
-    settings = get_settings()
-    return SchedulerConfig(
-        enabled=settings.scheduler_enabled,
-        interval_minutes=settings.scheduler_interval_minutes,
-    )
+    last_run_at: datetime | None = None

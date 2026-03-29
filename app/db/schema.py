@@ -61,6 +61,7 @@ SCHEMA_STATEMENTS = (
         ranking_score REAL NOT NULL DEFAULT 0,
         is_archived INTEGER NOT NULL DEFAULT 0,
         archived_at TEXT,
+        notified_to_slack_at TEXT,
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(extracted_document_id) REFERENCES extracted_documents(id)
     )
@@ -72,6 +73,24 @@ SCHEMA_STATEMENTS = (
         feedback_kind TEXT NOT NULL,
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(ranked_item_id) REFERENCES ranked_items(id)
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS scheduler_settings (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        enabled INTEGER NOT NULL DEFAULT 0,
+        interval_minutes INTEGER NOT NULL DEFAULT 60,
+        last_run_at TEXT,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS slack_settings (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        enabled INTEGER NOT NULL DEFAULT 0,
+        notify_limit INTEGER NOT NULL DEFAULT 3,
+        webhook_url TEXT,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
     """,
 )

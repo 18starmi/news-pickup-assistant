@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -17,3 +19,4 @@ class SchedulerStatusResponse(BaseModel):
     enabled: bool
     interval_minutes: int
     source_count: int
+    last_run_at: datetime | None
