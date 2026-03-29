@@ -1,0 +1,11 @@
+.DS_Store
+.env
+.venv/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+
+data/
+app.db
+
+curation_agent.egg-info/
